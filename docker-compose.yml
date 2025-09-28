@@ -1,8 +1,6 @@
 services:
   mongo:
     image: docker.io/library/mongo:7.0.14
-    # Si estás en Mac M1/M2 o ARM y te da problemas:
-    # platform: linux/amd64
     container_name: mongo
     ports:
       - "27017:27017"
@@ -16,7 +14,13 @@ services:
 
   app:
     build: .
-    env_file: .env
+    environment:
+      MONGO_URL: "mongodb://mongo:27017"
+      MONGO_DB: "logistics"
+      PORT: "3000"
+      PROVIDERS_TLS_BASEURL: "http://host.docker.internal:4010"
+      PROVIDERS_NRW_BASEURL: "http://host.docker.internal:4020"
+      POLL_CRON: "0 * * * *"
     depends_on:
       mongo:
         condition: service_healthy
