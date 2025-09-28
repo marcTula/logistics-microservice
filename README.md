@@ -104,6 +104,21 @@ npm run test
 npm run coverage
 
 
+# Postman
+En la carpeta [`postman/`]:
+
+- `Logistics Microservice.postman_collection.json`: Colección con todos los endpoints (`/deliveries`, `/deliveries/:id/status`, `/webhooks/tls`).
+- `Logistics Local.postman_environment.json`: Variables de entorno (`baseUrl`, `deliveryId`, etc.).
+
+Para probar:
+1. Importa ambos ficheros en Postman.
+2. Selecciona el environment `Logistics Local`.
+3. Ejecuta las requests en orden:
+   - `POST /deliveries` → crea una entrega.
+   - `GET /deliveries/:id/status` → consulta el estado.
+   - `POST /webhooks/tls` → simula actualización desde proveedor TLS.
+
+
 
 
 

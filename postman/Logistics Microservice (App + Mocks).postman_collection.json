@@ -1,0 +1,181 @@
+{
+  "info": {
+    "name": "Logistics Microservice (App + Mocks)",
+    "_postman_id": "f0a0d8fc-8f3a-49f6-b6c4-0eaa9f9e3b8a",
+    "description": "Colección para probar el microservicio y los proveedores mock (TLS webhook, NRW polling).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "App",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrlApp}}/health", "host": ["{{baseUrlApp}}"], "path": ["health"] }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /deliveries (TLS)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', ()=>pm.response.to.have.status(201));",
+                  "const json=pm.response.json();",
+                  "pm.environment.set('deliveryId', json.deliveryId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\":\"ORD-TLS-1\",\n  \"address\":{\"name\":\"Ada\",\"street\":\"Baker St 221B\",\"city\":\"London\",\"postalCode\":\"NW1\",\"country\":\"GB\"},\n  \"items\":[{\"sku\":\"SKU1\",\"qty\":1}],\n  \"providerPreferred\":\"TLS\"\n}"
+            },
+            "url": { "raw": "{{baseUrlApp}}/deliveries", "host": ["{{baseUrlApp}}"], "path": ["deliveries"] }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /deliveries (NRW)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', ()=>pm.response.to.have.status(201));",
+                  "const json=pm.response.json();",
+                  "pm.environment.set('deliveryId', json.deliveryId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\":\"ORD-NRW-1\",\n  \"address\":{\"name\":\"Grace\",\"street\":\"1 Infinite Loop\",\"city\":\"Cupertino\",\"postalCode\":\"95014\",\"country\":\"US\"},\n  \"items\":[{\"sku\":\"SKU2\",\"qty\":1}],\n  \"providerPreferred\":\"NRW\"\n}"
+            },
+            "url": { "raw": "{{baseUrlApp}}/deliveries", "host": ["{{baseUrlApp}}"], "path": ["deliveries"] }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /deliveries/:id/status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const json=pm.response.json();",
+                  "pm.test('Tiene status', ()=>pm.expect(json.status && json.status.code).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrlApp}}/deliveries/{{deliveryId}}/status",
+              "host": ["{{baseUrlApp}}"],
+              "path": ["deliveries", "{{deliveryId}}", "status"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "TLS Mock (webhook)",
+      "item": [
+        {
+          "name": "POST /shipments (crear etiqueta)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', ()=>pm.response.to.have.status(201));",
+                  "const json=pm.response.json();",
+                  "pm.environment.set('shipmentId', json.shipmentId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrlTLSMock}}/shipments", "host": ["{{baseUrlTLSMock}}"], "path": ["shipments"] }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /simulate-webhook (empuja estado a app)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appWebhookUrl\":\"{{webhookUrl}}\",\n  \"shipmentId\":\"{{shipmentId}}\",\n  \"code\":\"IN_TRANSIT\",\n  \"description\":\"TLS push update\"\n}"
+            },
+            "url": { "raw": "{{baseUrlTLSMock}}/simulate-webhook", "host": ["{{baseUrlTLSMock}}"], "path": ["simulate-webhook"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "NRW Mock (polling)",
+      "item": [
+        {
+          "name": "POST /shipments (crear etiqueta)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', ()=>pm.response.to.have.status(201));",
+                  "const json=pm.response.json();",
+                  "pm.environment.set('shipmentId', json.shipmentId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrlNRWMock}}/shipments", "host": ["{{baseUrlNRWMock}}"], "path": ["shipments"] }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /shipments/:id/status (ver estado mock)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrlNRWMock}}/shipments/{{shipmentId}}/status",
+              "host": ["{{baseUrlNRWMock}}"],
+              "path": ["shipments", "{{shipmentId}}", "status"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
