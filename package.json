@@ -1,0 +1,77 @@
+{
+  "name": "logistics-microservice",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Servicio de entregas (arquitectura hexagonal + DDD) con Fastify y MongoDB",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/bootstrap/index.ts",
+    "dev:all": "concurrently -k \"npm:mock:tls\" \"npm:mock:nrw\" \"npm:dev\"",
+    "build": "tsup src/bootstrap/index.ts --format esm,cjs --sourcemap --dts --clean --out-dir dist",
+    "start": "node dist/index.js",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write .",
+    "prepare": "husky",
+    "commit": "cz",
+    "mock:tls": "tsx src/infrastructure/providers/mocks/tls.mock.server.ts",
+    "mock:nrw": "tsx src/infrastructure/providers/mocks/nrw.mock.server.ts",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "@fastify/swagger": "^9.5.1",
+    "@fastify/swagger-ui": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.6.1",
+    "mongodb": "^6.8.0",
+    "node-cron": "^3.0.3",
+    "pino": "^9.3.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "@types/node": "^22.5.4",
+    "@types/node-cron": "^3.0.11",
+    "@typescript-eslint/eslint-plugin": "^8.8.1",
+    "@typescript-eslint/parser": "^8.8.1",
+    "@vitest/coverage-v8": "^2.1.9",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^9.11.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "mongodb-memory-server": "^10.1.4",
+    "prettier": "^3.3.3",
+    "tsup": "^8.2.4",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^2.1.3"
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md}": [
+      "prettier --write"
+    ],
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  }
+}

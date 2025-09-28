@@ -1,0 +1,118 @@
+openapi: 3.1.0
+info:
+  title: Logistics API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+paths:
+  /deliveries:
+    post:
+      summary: Create delivery and return label
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeliveryRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDeliveryResponse'
+  /deliveries/{id}/status:
+    get:
+      summary: Get latest status for a delivery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryStatusResponse'
+        '404':
+          description: Not found
+  /webhooks/tls:
+    post:
+      summary: TLS webhook to push delivery status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TLSWebhookPayload'
+      responses:
+        '204':
+          description: No Content
+components:
+  schemas:
+    Address:
+      type: object
+      required: [name, street, city, postalCode, country]
+      properties:
+        name: { type: string }
+        street: { type: string }
+        city: { type: string }
+        postalCode: { type: string }
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+          description: ISO 3166-1 alpha-2
+    Item:
+      type: object
+      required: [sku, qty]
+      properties:
+        sku: { type: string }
+        qty: { type: integer, minimum: 1 }
+    CreateDeliveryRequest:
+      type: object
+      required: [orderId, address, items]
+      properties:
+        orderId: { type: string }
+        address: { $ref: '#/components/schemas/Address' }
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/Item' }
+        providerPreferred:
+          type: string
+          enum: [NRW, TLS]
+    CreateDeliveryResponse:
+      type: object
+      properties:
+        deliveryId: { type: string }
+        label:
+          type: object
+          properties:
+            format: { type: string, enum: [PDF, PNG] }
+            contentBase64: { type: string }
+    DeliveryStatusResponse:
+      type: object
+      properties:
+        deliveryId: { type: string }
+        provider: { type: string, enum: [NRW, TLS] }
+        status:
+          type: object
+          properties:
+            code: { type: string, enum: [CREATED, IN_TRANSIT, DELIVERED, FAILED] }
+            updatedAt: { type: string, format: date-time }
+            description: { type: string }
+    TLSWebhookPayload:
+      type: object
+      required: [shipmentId, status]
+      properties:
+        shipmentId: { type: string }
+        status:
+          type: object
+          required: [code]
+          properties:
+            code: { type: string, enum: [CREATED, IN_TRANSIT, DELIVERED, FAILED] }
+            at: { type: string, format: date-time }
+            description: { type: string }
